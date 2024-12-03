@@ -5,7 +5,7 @@ namespace BeeNice.WebApi.Translators
 {
     public static class Hive2HiveDtoTranslator
     {
-        public static IEnumerable<HiveDto> Translate(IEnumerable<Hive> entities)
+        public static List<HiveDto> Translate(IEnumerable<Hive> entities)
         {
             return entities.Select(i => new HiveDto()
             {
@@ -14,7 +14,7 @@ namespace BeeNice.WebApi.Translators
                 HiveNumber = i.HiveNumber,
                 State = i.State,
                 Type = i.Type,
-            });
+            }).ToList();
         }
 
         public static HiveDto TranslateOne(Hive entity)

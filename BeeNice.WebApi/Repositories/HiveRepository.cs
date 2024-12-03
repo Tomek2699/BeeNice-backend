@@ -16,37 +16,46 @@ namespace BeeNice.WebApi.Repositories
             _dbContext = dbContext;
         }
 
-        public async Task<List<Hive>> GetItems(long apiaryId)
+        public async Task<List<Hive>> GetItems(long apiaryId, string userId)
         {
-            var items = await _dbContext.Hive.AsNoTracking().Where(i => i.ApiaryId == apiaryId).ToListAsync();
+            var items = await _dbContext.Hive.AsNoTracking()
+                .Where(i => i.Apiary.UserId == userId && i.ApiaryId == apiaryId)
+                .ToListAsync();
             return items;
         }
 
-        public async Task<Hive?> SaveItem(HiveDto hive)
+        public async Task<Hive?> SaveItem(HiveDto hive, string userId)
         {
-            var itemToSave = new Hive
+            var apiary = _dbContext.Apiary.AsNoTracking()
+                .FirstOrDefaultAsync(i => i.Id == hive.ApiaryId && i.UserId == userId);
+            if (apiary != null)
             {
-                ApiaryId = hive.ApiaryId,
-                HiveNumber = hive.HiveNumber,
-                State = hive.State,
-                Type = hive.Type
-            };
+                var itemToSave = new Hive
+                {
+                    ApiaryId = hive.ApiaryId,
+                    HiveNumber = hive.HiveNumber,
+                    State = hive.State,
+                    Type = hive.Type
+                };
 
-            _dbContext.Hive.Add(itemToSave);
-            long returnedId = await _dbContext.SaveChangesAsync();
-            var returnedItem = GetItem(returnedId).Result?.Value;
-            return returnedItem;
+                _dbContext.Hive.Add(itemToSave);
+                long returnedId = await _dbContext.SaveChangesAsync();
+                var returnedItem = GetItem(returnedId, userId).Result;
+                return returnedItem;
+            }
+
+            return null;
         }
 
-        public async Task<ActionResult<Hive?>> GetItem(long id)
+        public async Task<Hive?> GetItem(long id, string userId)
         {
-            var item = await _dbContext.Hive.FindAsync(id);
+            var item = await _dbContext.Hive.FirstOrDefaultAsync(i => i.Id == id && i.Apiary.UserId == userId);
             return item;
         }
 
-        public async Task<ActionResult> Remove(long id)
+        public async Task<ActionResult> Remove(long id, string userId)
         {
-            var itemToRemove = await _dbContext.Hive.FindAsync(id);
+            var itemToRemove = await _dbContext.Hive.FirstOrDefaultAsync(i => i.Id == id && i.Apiary.UserId == userId);
             if (itemToRemove != null)
             {
                 _dbContext.Hive.Remove(itemToRemove);
@@ -57,9 +66,9 @@ namespace BeeNice.WebApi.Repositories
             return new NotFoundResult();
         }
 
-        public async Task<Hive?> EditItem(HiveDto hive)
+        public async Task<Hive?> EditItem(HiveDto hive, string userId)
         {
-            var itemToUpdate = await _dbContext.Hive.FindAsync(hive.Id);
+            var itemToUpdate = await _dbContext.Hive.FirstOrDefaultAsync(i => i.Id == hive.Id && i.Apiary.UserId == userId);
             if (itemToUpdate != null)
             {
                 if (itemToUpdate.HiveNumber != hive.HiveNumber)

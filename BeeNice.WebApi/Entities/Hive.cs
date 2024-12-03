@@ -10,5 +10,8 @@
         public Apiary Apiary { get; set; }
 
         public List<BeeFamily> BeeFamilies { get; set; }
+        public List<Review> Reviews { get; set; }
+        public List<HoneyCollection> HoneyCollections { get; set; }
+        public List<TherapeuticTreatment> TherapeuticTreatments { get; set; }
     }
 }

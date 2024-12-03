@@ -1,14 +1,16 @@
 ﻿using BeeNice.Models.Dtos;
-using BeeNice.WebApi.Repositories;
+using BeeNice.WebApi.Entities;
 using BeeNice.WebApi.Repositories.IRepositories;
 using BeeNice.WebApi.Translators;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BeeNice.WebApi.Controllers
 {
     [Route("api/HiveController")]
     [ApiController]
-    public class HiveController : ControllerBase
+    [Authorize]
+    public class HiveController : BaseController
     {
         private readonly IHiveRepository _hiveRepository;
 
@@ -23,18 +25,19 @@ namespace BeeNice.WebApi.Controllers
         {
             try
             {
-                var hives = await _hiveRepository.GetItems(apiaryId);
-                if (!hives.Any())
+                var userId = GetUserId();
+                List<HiveDto> hiveDtos = new List<HiveDto>();
+                if (!string.IsNullOrWhiteSpace(userId))
                 {
-                    return NotFound();
+                    var hives = await _hiveRepository.GetItems(apiaryId, userId);
+                    hiveDtos = Hive2HiveDtoTranslator.Translate(hives);
                 }
 
-                var hiveDtos = Hive2HiveDtoTranslator.Translate(hives);
                 return Ok(hiveDtos);
             }
-            catch
+            catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving data from database");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while retrieving hives");
             }
         }
 
@@ -44,11 +47,15 @@ namespace BeeNice.WebApi.Controllers
         {
             try
             {
-                var savedHive = await _hiveRepository.SaveItem(hive);
-                if (savedHive != null)
+                var userId = GetUserId();
+                if (!string.IsNullOrEmpty(userId))
                 {
-                    var item = Hive2HiveDtoTranslator.TranslateOne(savedHive);
-                    return Ok(item);
+                    var savedHive = await _hiveRepository.SaveItem(hive, userId);
+                    if (savedHive != null)
+                    {
+                        var item = Hive2HiveDtoTranslator.TranslateOne(savedHive);
+                        return Ok(item);
+                    }
                 }
 
                 return NotFound();
@@ -65,13 +72,19 @@ namespace BeeNice.WebApi.Controllers
         {
             try
             {
-                var hive = await _hiveRepository.GetItem(id);
-                if (hive.Value == null)
+                var userId = GetUserId();
+                Hive? hive = null;
+                if (!string.IsNullOrEmpty(userId))
                 {
-                    return NotFound(StatusCodes.Status404NotFound);
+                    hive = await _hiveRepository.GetItem(id, userId);
+                    if (hive != null)
+                    {
+                        var item = Hive2HiveDtoTranslator.TranslateOne(hive);
+                        return Ok(item);
+                    }
                 }
 
-                return Ok(hive);
+                return NotFound(StatusCodes.Status404NotFound);
             }
             catch
             {
@@ -85,8 +98,14 @@ namespace BeeNice.WebApi.Controllers
         {
             try
             {
-                await _hiveRepository.Remove(id);
-                return Ok();
+                var userId = GetUserId();
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    await _hiveRepository.Remove(id, userId);
+                    return Ok();
+                }
+
+                return NotFound();
             }
             catch (Exception e)
             {
@@ -100,11 +119,15 @@ namespace BeeNice.WebApi.Controllers
         {
             try
             {
-                var updatedItem = await _hiveRepository.EditItem(hive);
-                if (updatedItem != null)
+                var userId = GetUserId();
+                if (!string.IsNullOrEmpty(userId))
                 {
-                    var item = Hive2HiveDtoTranslator.TranslateOne(updatedItem);
-                    return Ok(item);
+                    var updatedItem = await _hiveRepository.EditItem(hive, userId);
+                    if (updatedItem != null)
+                    {
+                        var item = Hive2HiveDtoTranslator.TranslateOne(updatedItem);
+                        return Ok(item);
+                    }
                 }
 
                 return NotFound();

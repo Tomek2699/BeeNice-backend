@@ -95,7 +95,7 @@ namespace BeeNice.WebApi.Controllers
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var expires = DateTime.Now.AddMinutes(30);
+            var expires = DateTime.Now.AddDays(1);
 
             var token = new JwtSecurityToken(
                 issuer: _configuration["Jwt:Issuer"],
@@ -144,15 +144,15 @@ namespace BeeNice.WebApi.Controllers
                     }
                 }
 
-                return Unauthorized("Invalid token format.");
+                return Unauthorized("Invalid token format");
             }
             catch (SecurityTokenExpiredException)
             {
-                return Unauthorized("Token has expired.");
+                return Unauthorized("Token has expired");
             }
             catch (SecurityTokenException)
             {
-                return Unauthorized("Token is invalid.");
+                return Unauthorized("Token is invalid");
             }
             catch (Exception ex)
             {

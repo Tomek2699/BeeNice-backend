@@ -12,21 +12,6 @@ namespace BeeNice.WebApi.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Apiary",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Location = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreationDate = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Apiary", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "AspNetRoles",
                 columns: table => new
                 {
@@ -66,28 +51,6 @@ namespace BeeNice.WebApi.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Hive",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    HiveNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    State = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ApiaryId = table.Column<long>(type: "bigint", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Hive", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Hive_Apiary_ApiaryId",
-                        column: x => x.ApiaryId,
-                        principalTable: "Apiary",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
@@ -104,6 +67,28 @@ namespace BeeNice.WebApi.Migrations
                         name: "FK_AspNetRoleClaims_AspNetRoles_RoleId",
                         column: x => x.RoleId,
                         principalTable: "AspNetRoles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Apiary",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Location = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreationDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Apiary", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Apiary_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -194,6 +179,28 @@ namespace BeeNice.WebApi.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Hive",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    HiveNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    State = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ApiaryId = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Hive", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Hive_Apiary_ApiaryId",
+                        column: x => x.ApiaryId,
+                        principalTable: "Apiary",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "BeeFamily",
                 columns: table => new
                 {
@@ -223,19 +230,13 @@ namespace BeeNice.WebApi.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CollectionDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    HiveId = table.Column<long>(type: "bigint", nullable: false),
                     HoneyQuantity = table.Column<float>(type: "real", nullable: false),
                     TypeOfHoney = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    BeeFamilyId = table.Column<long>(type: "bigint", nullable: true)
+                    HiveId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_HoneyCollection", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_HoneyCollection_BeeFamily_BeeFamilyId",
-                        column: x => x.BeeFamilyId,
-                        principalTable: "BeeFamily",
-                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_HoneyCollection_Hive_HiveId",
                         column: x => x.HiveId,
@@ -254,15 +255,15 @@ namespace BeeNice.WebApi.Migrations
                     Race = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     HatchDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     State = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    BeeFamilyId = table.Column<long>(type: "bigint", nullable: false)
+                    HiveId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Queen", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Queen_BeeFamily_BeeFamilyId",
-                        column: x => x.BeeFamilyId,
-                        principalTable: "BeeFamily",
+                        name: "FK_Queen_Hive_HiveId",
+                        column: x => x.HiveId,
+                        principalTable: "Hive",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -274,18 +275,17 @@ namespace BeeNice.WebApi.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ReviewDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    FamilyId = table.Column<long>(type: "bigint", nullable: false),
-                    BeeFamilyId = table.Column<long>(type: "bigint", nullable: false),
                     FamilyState = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Comment = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Comment = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    HiveId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Review", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Review_BeeFamily_BeeFamilyId",
-                        column: x => x.BeeFamilyId,
-                        principalTable: "BeeFamily",
+                        name: "FK_Review_Hive_HiveId",
+                        column: x => x.HiveId,
+                        principalTable: "Hive",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -297,22 +297,26 @@ namespace BeeNice.WebApi.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     TreatmentDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    FamilyId = table.Column<long>(type: "bigint", nullable: false),
-                    BeeFamilyId = table.Column<long>(type: "bigint", nullable: false),
                     Medicine = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Dose = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Comment = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Comment = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    HiveId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_TherapeuticTreatment", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_TherapeuticTreatment_BeeFamily_BeeFamilyId",
-                        column: x => x.BeeFamilyId,
-                        principalTable: "BeeFamily",
+                        name: "FK_TherapeuticTreatment_Hive_HiveId",
+                        column: x => x.HiveId,
+                        principalTable: "Hive",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Apiary_UserId",
+                table: "Apiary",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
@@ -364,29 +368,24 @@ namespace BeeNice.WebApi.Migrations
                 column: "ApiaryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_HoneyCollection_BeeFamilyId",
-                table: "HoneyCollection",
-                column: "BeeFamilyId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_HoneyCollection_HiveId",
                 table: "HoneyCollection",
                 column: "HiveId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Queen_BeeFamilyId",
+                name: "IX_Queen_HiveId",
                 table: "Queen",
-                column: "BeeFamilyId");
+                column: "HiveId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Review_BeeFamilyId",
+                name: "IX_Review_HiveId",
                 table: "Review",
-                column: "BeeFamilyId");
+                column: "HiveId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TherapeuticTreatment_BeeFamilyId",
+                name: "IX_TherapeuticTreatment_HiveId",
                 table: "TherapeuticTreatment",
-                column: "BeeFamilyId");
+                column: "HiveId");
         }
 
         /// <inheritdoc />
@@ -408,6 +407,9 @@ namespace BeeNice.WebApi.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "BeeFamily");
+
+            migrationBuilder.DropTable(
                 name: "HoneyCollection");
 
             migrationBuilder.DropTable(
@@ -423,16 +425,13 @@ namespace BeeNice.WebApi.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "AspNetUsers");
-
-            migrationBuilder.DropTable(
-                name: "BeeFamily");
-
-            migrationBuilder.DropTable(
                 name: "Hive");
 
             migrationBuilder.DropTable(
                 name: "Apiary");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUsers");
         }
     }
 }

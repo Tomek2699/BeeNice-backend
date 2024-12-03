@@ -6,10 +6,10 @@ namespace BeeNice.WebApi.Repositories.IRepositories
 {
     public interface IHiveRepository
     {
-        Task<List<Hive>> GetItems(long apiaryId);
-        Task<Hive?> SaveItem(HiveDto hive);
-        Task<ActionResult<Hive?>> GetItem(long id);
-        Task<ActionResult> Remove(long id);
-        Task<Hive?> EditItem(HiveDto hive);
+        Task<List<Hive>> GetItems(long apiaryId, string userId);
+        Task<Hive?> SaveItem(HiveDto hive, string userId);
+        Task<Hive?> GetItem(long id, string userId);
+        Task<ActionResult> Remove(long id, string userId);
+        Task<Hive?> EditItem(HiveDto hive, string userId);
     }
 }

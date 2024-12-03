@@ -6,7 +6,7 @@ namespace BeeNice.WebApi.Repositories.IRepositories
 {
     public interface IQueenRepository
     {
-        Task<List<Queen>> GetItems(long beeFamilyId);
+        Task<List<Queen>> GetItems(long hiveId);
         Task<Queen?> SaveItem(QueenDto queen);
         Task<ActionResult<Queen?>> GetItem(long id);
         Task<ActionResult> Remove(long id);

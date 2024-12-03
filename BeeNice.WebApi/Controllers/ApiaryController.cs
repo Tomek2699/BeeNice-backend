@@ -72,13 +72,19 @@ namespace BeeNice.WebApi.Controllers
         {
             try
             {
-                var apiary = await _apiaryRepository.GetItem(id);
-                if (apiary.Value == null)
+                var userId = GetUserId();
+                Apiary? apiary = null;
+                if (!string.IsNullOrEmpty(userId))
                 {
-                    return NotFound(StatusCodes.Status404NotFound);
+                    apiary = await _apiaryRepository.GetItem(id, userId);
+                    if (apiary != null)
+                    {
+                        var item = Apiary2ApiaryDtoTranslator.TranslateOne(apiary);
+                        return Ok(item);
+                    }
                 }
 
-                return Ok(apiary);
+                return NotFound(StatusCodes.Status404NotFound);
             }
             catch
             {
@@ -92,8 +98,14 @@ namespace BeeNice.WebApi.Controllers
         {
             try
             {
-                await _apiaryRepository.Remove(id);
-                return Ok();
+                var userId = GetUserId();
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    await _apiaryRepository.Remove(id, userId);
+                    return Ok();
+                }
+
+                return NotFound();
             }
             catch (Exception e)
             {
@@ -107,13 +119,17 @@ namespace BeeNice.WebApi.Controllers
         {
             try
             {
-                var updatedItem = await _apiaryRepository.EditItem(apiary);
-                if (updatedItem != null)
+                var userId = GetUserId();
+                if (!string.IsNullOrEmpty(userId))
                 {
-                    var item = Apiary2ApiaryDtoTranslator.TranslateOne(updatedItem);
-                    return Ok(item);
+                    var updatedItem = await _apiaryRepository.EditItem(apiary, userId);
+                    if (updatedItem != null)
+                    {
+                        var item = Apiary2ApiaryDtoTranslator.TranslateOne(updatedItem);
+                        return Ok(item);
+                    }
                 }
-
+                
                 return NotFound();
             }
             catch (Exception e)

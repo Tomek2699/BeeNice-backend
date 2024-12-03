@@ -7,6 +7,6 @@
         public string Race { get; set; }
         public DateTime HatchDate { get; set; }
         public string State { get; set; }
-        public long BeeFamilyId { get; set; }
+        public long HiveId { get; set; }
     }
 }

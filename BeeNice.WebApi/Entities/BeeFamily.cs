@@ -9,11 +9,5 @@
         public DateTime CreationDate { get; set; }
         public long HiveId { get; set; }
         public Hive Hive { get; set; }
-
-
-        public List<Queen> Queens { get; set; }
-        public List<Review> Reviews { get; set; }
-        public List<HoneyCollection> HoneyCollections { get; set; }
-        public List<TherapeuticTreatment> TherapeuticTreatments { get; set; }
     }
 }

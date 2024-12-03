@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BeeNice.WebApi.Migrations
 {
     [DbContext(typeof(BeeNiceDbContext))]
-    [Migration("20241120233309_AddUserToApiary")]
-    partial class AddUserToApiary
+    [Migration("20241203235539_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -126,9 +126,6 @@ namespace BeeNice.WebApi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
-                    b.Property<long?>("BeeFamilyId")
-                        .HasColumnType("bigint");
-
                     b.Property<DateTime>("CollectionDate")
                         .HasColumnType("datetime2");
 
@@ -144,8 +141,6 @@ namespace BeeNice.WebApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BeeFamilyId");
-
                     b.HasIndex("HiveId");
 
                     b.ToTable("HoneyCollection");
@@ -159,11 +154,11 @@ namespace BeeNice.WebApi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
-                    b.Property<long>("BeeFamilyId")
-                        .HasColumnType("bigint");
-
                     b.Property<DateTime>("HatchDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<long>("HiveId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("QueenNumber")
                         .IsRequired()
@@ -179,7 +174,7 @@ namespace BeeNice.WebApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BeeFamilyId");
+                    b.HasIndex("HiveId");
 
                     b.ToTable("Queen");
                 });
@@ -192,26 +187,23 @@ namespace BeeNice.WebApi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
-                    b.Property<long>("BeeFamilyId")
-                        .HasColumnType("bigint");
-
                     b.Property<string>("Comment")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("FamilyId")
-                        .HasColumnType("bigint");
-
                     b.Property<string>("FamilyState")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("HiveId")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime>("ReviewDate")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BeeFamilyId");
+                    b.HasIndex("HiveId");
 
                     b.ToTable("Review");
                 });
@@ -224,9 +216,6 @@ namespace BeeNice.WebApi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
-                    b.Property<long>("BeeFamilyId")
-                        .HasColumnType("bigint");
-
                     b.Property<string>("Comment")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -235,7 +224,7 @@ namespace BeeNice.WebApi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("FamilyId")
+                    b.Property<long>("HiveId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("Medicine")
@@ -247,7 +236,7 @@ namespace BeeNice.WebApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BeeFamilyId");
+                    b.HasIndex("HiveId");
 
                     b.ToTable("TherapeuticTreatment");
                 });
@@ -485,12 +474,8 @@ namespace BeeNice.WebApi.Migrations
 
             modelBuilder.Entity("BeeNice.WebApi.Entities.HoneyCollection", b =>
                 {
-                    b.HasOne("BeeNice.WebApi.Entities.BeeFamily", null)
-                        .WithMany("HoneyCollections")
-                        .HasForeignKey("BeeFamilyId");
-
                     b.HasOne("BeeNice.WebApi.Entities.Hive", "Hive")
-                        .WithMany()
+                        .WithMany("HoneyCollections")
                         .HasForeignKey("HiveId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -500,35 +485,35 @@ namespace BeeNice.WebApi.Migrations
 
             modelBuilder.Entity("BeeNice.WebApi.Entities.Queen", b =>
                 {
-                    b.HasOne("BeeNice.WebApi.Entities.BeeFamily", "BeeFamily")
-                        .WithMany("Queens")
-                        .HasForeignKey("BeeFamilyId")
+                    b.HasOne("BeeNice.WebApi.Entities.Hive", "Hive")
+                        .WithMany()
+                        .HasForeignKey("HiveId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("BeeFamily");
+                    b.Navigation("Hive");
                 });
 
             modelBuilder.Entity("BeeNice.WebApi.Entities.Review", b =>
                 {
-                    b.HasOne("BeeNice.WebApi.Entities.BeeFamily", "BeeFamily")
+                    b.HasOne("BeeNice.WebApi.Entities.Hive", "Hive")
                         .WithMany("Reviews")
-                        .HasForeignKey("BeeFamilyId")
+                        .HasForeignKey("HiveId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("BeeFamily");
+                    b.Navigation("Hive");
                 });
 
             modelBuilder.Entity("BeeNice.WebApi.Entities.TherapeuticTreatment", b =>
                 {
-                    b.HasOne("BeeNice.WebApi.Entities.BeeFamily", "BeeFamily")
+                    b.HasOne("BeeNice.WebApi.Entities.Hive", "Hive")
                         .WithMany("TherapeuticTreatments")
-                        .HasForeignKey("BeeFamilyId")
+                        .HasForeignKey("HiveId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("BeeFamily");
+                    b.Navigation("Hive");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -587,20 +572,15 @@ namespace BeeNice.WebApi.Migrations
                     b.Navigation("Hives");
                 });
 
-            modelBuilder.Entity("BeeNice.WebApi.Entities.BeeFamily", b =>
+            modelBuilder.Entity("BeeNice.WebApi.Entities.Hive", b =>
                 {
-                    b.Navigation("HoneyCollections");
+                    b.Navigation("BeeFamilies");
 
-                    b.Navigation("Queens");
+                    b.Navigation("HoneyCollections");
 
                     b.Navigation("Reviews");
 
                     b.Navigation("TherapeuticTreatments");
-                });
-
-            modelBuilder.Entity("BeeNice.WebApi.Entities.Hive", b =>
-                {
-                    b.Navigation("BeeFamilies");
                 });
 #pragma warning restore 612, 618
         }

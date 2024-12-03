@@ -8,7 +8,7 @@ public interface IApiaryRepository
 {
     Task<List<Apiary>> GetItems(string userId);
     Task<Apiary?> SaveItem(ApiaryDto apiary, string userId);
-    Task<ActionResult<Apiary?>> GetItem(long id);
-    Task<ActionResult> Remove(long id);
-    Task<Apiary?> EditItem(ApiaryDto apiary);
+    Task<Apiary?> GetItem(long id, string userId);
+    Task<ActionResult> Remove(long id, string userId);
+    Task<Apiary?> EditItem(ApiaryDto apiary, string userId);
 }

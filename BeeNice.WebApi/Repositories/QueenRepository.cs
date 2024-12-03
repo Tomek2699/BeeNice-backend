@@ -22,9 +22,9 @@ namespace BeeNice.WebApi.Repositories
             return item;
         }
 
-        public async Task<List<Queen>> GetItems(long beeFamilyId)
+        public async Task<List<Queen>> GetItems(long hiveId)
         {
-            var items = await _dbContext.Queen.AsNoTracking().Where(i => i.BeeFamilyId == beeFamilyId).ToListAsync();
+            var items = await _dbContext.Queen.AsNoTracking().Where(i => i.HiveId == hiveId).ToListAsync();
             return items;
         }
 
@@ -77,7 +77,7 @@ namespace BeeNice.WebApi.Repositories
             {
                 QueenNumber = queen.QueenNumber,
                 State = queen.State,
-                BeeFamilyId = queen.BeeFamilyId,
+                HiveId = queen.HiveId,
                 Race = queen.Race,
                 HatchDate = queen.HatchDate,
             };

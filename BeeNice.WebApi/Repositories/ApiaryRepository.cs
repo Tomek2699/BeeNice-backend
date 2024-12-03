@@ -34,19 +34,19 @@ namespace BeeNice.WebApi.Repositories
 
             _dbContext.Apiary.Add(itemToSave);
             await _dbContext.SaveChangesAsync();
-            var returnedItem = GetItem(itemToSave.Id).Result?.Value;
+            var returnedItem = GetItem(itemToSave.Id, userId).Result;
             return returnedItem;
         }
 
-        public async Task<ActionResult<Apiary?>> GetItem(long id)
+        public async Task<Apiary?> GetItem(long id, string userId)
         {
-            var item = await _dbContext.Apiary.FindAsync(id);
+            var item = await _dbContext.Apiary.FirstOrDefaultAsync(i => i.Id == id && i.UserId == userId);
             return item;
         }
 
-        public async Task<ActionResult> Remove(long id)
+        public async Task<ActionResult> Remove(long id, string userId)
         {
-            var itemToRemove = await _dbContext.Apiary.FindAsync(id);
+            var itemToRemove = await _dbContext.Apiary.FirstOrDefaultAsync(i => i.Id == id && i.UserId == userId);
             if (itemToRemove != null)
             {
                 _dbContext.Apiary.Remove(itemToRemove);
@@ -57,9 +57,9 @@ namespace BeeNice.WebApi.Repositories
             return new NotFoundResult();
         }
 
-        public async Task<Apiary?> EditItem(ApiaryDto apiary)
+        public async Task<Apiary?> EditItem(ApiaryDto apiary, string userId)
         {
-            var itemToUpdate = await _dbContext.Apiary.FindAsync(apiary.Id);
+            var itemToUpdate = await _dbContext.Apiary.FirstOrDefaultAsync(i => i.Id == apiary.Id && i.UserId == userId);
             if (itemToUpdate != null)
             {
                 if (itemToUpdate.Name != apiary.Name)
