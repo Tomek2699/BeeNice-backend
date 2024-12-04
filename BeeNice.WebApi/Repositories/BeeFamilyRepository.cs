@@ -16,51 +16,47 @@ namespace BeeNice.WebApi.Repositories
             _dbContext = dbContext;
         }
 
-        public async Task<List<BeeFamily>> GetItems(long hiveId)
+        public async Task<List<BeeFamily>> GetItems(long hiveId, string userId)
         {
-            var items = await _dbContext.BeeFamily.AsNoTracking().Where(i => i.HiveId == hiveId).ToListAsync();
+            var items = await _dbContext.BeeFamily.AsNoTracking()
+                .Where(i => i.Hive.Apiary.UserId == userId && i.HiveId == hiveId)
+                .ToListAsync();
             return items;
         }
 
-        public async Task<BeeFamily?> SaveItem(BeeFamilyDto beeFamily)
+        public async Task<BeeFamily?> GetItem(long id, string userId)
         {
-            var itemToSave = new BeeFamily()
-            {
-                HiveId = beeFamily.HiveId,
-                FamilyNumber = beeFamily.FamilyNumber,
-                FamilyState = beeFamily.FamilyState,
-                Race = beeFamily.Race,
-                CreationDate = beeFamily.CreationDate
-            };
-
-            _dbContext.BeeFamily.Add(itemToSave);
-            long returnedId = await _dbContext.SaveChangesAsync();
-            var returnedItem = GetItem(returnedId).Result?.Value;
-            return returnedItem;
-        }
-
-        public async Task<ActionResult<BeeFamily?>> GetItem(long id)
-        {
-            var item = await _dbContext.BeeFamily.FindAsync(id);
+            var item = await _dbContext.BeeFamily.FirstOrDefaultAsync(i => i.Id == id && i.Hive.Apiary.UserId == userId);
             return item;
         }
 
-        public async Task<ActionResult> Remove(long id)
+        public async Task<BeeFamily?> SaveItem(BeeFamilyDto beeFamily, string userId)
         {
-            var itemToRemove = await _dbContext.BeeFamily.FindAsync(id);
-            if (itemToRemove != null)
+            var hive = _dbContext.Hive.AsNoTracking()
+                .FirstOrDefaultAsync(i => i.Id == beeFamily.HiveId && i.Apiary.UserId == userId);
+            if (hive != null)
             {
-                _dbContext.BeeFamily.Remove(itemToRemove);
-                await _dbContext.SaveChangesAsync();
-                return new OkResult();
+                var itemToSave = new BeeFamily()
+                {
+                    HiveId = beeFamily.HiveId,
+                    FamilyNumber = beeFamily.FamilyNumber,
+                    FamilyState = beeFamily.FamilyState,
+                    Race = beeFamily.Race,
+                    CreationDate = beeFamily.CreationDate
+                };
+
+                _dbContext.BeeFamily.Add(itemToSave);
+                long returnedId = await _dbContext.SaveChangesAsync();
+                var returnedItem = GetItem(returnedId, userId).Result;
+                return returnedItem;
             }
 
-            return new NotFoundResult();
+            return null;
         }
 
-        public async Task<BeeFamily?> EditItem(BeeFamilyDto beeFamily)
+        public async Task<BeeFamily?> EditItem(BeeFamilyDto beeFamily, string userId)
         {
-            var itemToUpdate = await _dbContext.BeeFamily.FindAsync(beeFamily.Id);
+            var itemToUpdate = await _dbContext.BeeFamily.FirstOrDefaultAsync(i => i.Id == beeFamily.Id && i.Hive.Apiary.UserId == userId);
             if (itemToUpdate != null)
             {
                 if (itemToUpdate.FamilyNumber != beeFamily.FamilyNumber)
@@ -86,6 +82,19 @@ namespace BeeNice.WebApi.Repositories
 
             await _dbContext.SaveChangesAsync();
             return itemToUpdate;
+        }
+
+        public async Task<ActionResult> Remove(long id, string userId)
+        {
+            var itemToRemove = await _dbContext.BeeFamily.FirstOrDefaultAsync(i => i.Id == id && i.Hive.Apiary.UserId == userId);
+            if (itemToRemove != null)
+            {
+                _dbContext.BeeFamily.Remove(itemToRemove);
+                await _dbContext.SaveChangesAsync();
+                return new OkResult();
+            }
+
+            return new NotFoundResult();
         }
     }
 }

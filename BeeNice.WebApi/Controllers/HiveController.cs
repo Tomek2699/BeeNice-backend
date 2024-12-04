@@ -41,31 +41,6 @@ namespace BeeNice.WebApi.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("Save")]
-        public async Task<ActionResult<HiveDto>> Save(HiveDto hive)
-        {
-            try
-            {
-                var userId = GetUserId();
-                if (!string.IsNullOrEmpty(userId))
-                {
-                    var savedHive = await _hiveRepository.SaveItem(hive, userId);
-                    if (savedHive != null)
-                    {
-                        var item = Hive2HiveDtoTranslator.TranslateOne(savedHive);
-                        return Ok(item);
-                    }
-                }
-
-                return NotFound();
-            }
-            catch
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error saving data");
-            }
-        }
-
         [HttpGet]
         [Route("Get/{id}")]
         public async Task<ActionResult<HiveDto>> Get(long id)
@@ -92,24 +67,28 @@ namespace BeeNice.WebApi.Controllers
             }
         }
 
-        [HttpDelete]
-        [Route("Remove/{id}")]
-        public async Task<ActionResult> Remove(long id)
+        [HttpPost]
+        [Route("Save")]
+        public async Task<ActionResult<HiveDto>> Save(HiveDto hive)
         {
             try
             {
                 var userId = GetUserId();
                 if (!string.IsNullOrEmpty(userId))
                 {
-                    await _hiveRepository.Remove(id, userId);
-                    return Ok();
+                    var savedHive = await _hiveRepository.SaveItem(hive, userId);
+                    if (savedHive != null)
+                    {
+                        var item = Hive2HiveDtoTranslator.TranslateOne(savedHive);
+                        return Ok(item);
+                    }
                 }
 
                 return NotFound();
             }
-            catch (Exception e)
+            catch
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving data from database");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error saving data");
             }
         }
 
@@ -128,6 +107,27 @@ namespace BeeNice.WebApi.Controllers
                         var item = Hive2HiveDtoTranslator.TranslateOne(updatedItem);
                         return Ok(item);
                     }
+                }
+
+                return NotFound();
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving data from database");
+            }
+        }
+
+        [HttpDelete]
+        [Route("Remove/{id}")]
+        public async Task<ActionResult> Remove(long id)
+        {
+            try
+            {
+                var userId = GetUserId();
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    await _hiveRepository.Remove(id, userId);
+                    return Ok();
                 }
 
                 return NotFound();

@@ -6,10 +6,10 @@ namespace BeeNice.WebApi.Repositories.IRepositories
 {
     public interface IQueenRepository
     {
-        Task<List<Queen>> GetItems(long hiveId);
-        Task<Queen?> SaveItem(QueenDto queen);
-        Task<ActionResult<Queen?>> GetItem(long id);
-        Task<ActionResult> Remove(long id);
-        Task<Queen?> EditItem(QueenDto queen);
+        Task<List<Queen>> GetItems(long hiveId, string userId);
+        Task<Queen?> GetItem(long id, string userId);
+        Task<Queen?> SaveItem(QueenDto queen, string userId);
+        Task<Queen?> EditItem(QueenDto queen, string userId);
+        Task<ActionResult> Remove(long id, string userId);
     }
 }

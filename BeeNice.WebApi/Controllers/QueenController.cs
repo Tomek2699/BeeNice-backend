@@ -1,35 +1,65 @@
 ﻿using BeeNice.Models.Dtos;
+using BeeNice.WebApi.Entities;
 using BeeNice.WebApi.Repositories.IRepositories;
 using BeeNice.WebApi.Translators;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BeeNice.WebApi.Controllers
 {
     [Route("api/QueenController")]
     [ApiController]
-    public class QueenController : ControllerBase
+    [Authorize]
+    public class QueenController : BaseController
     {
-        private readonly IQueenRepository _repository;
+        private readonly IQueenRepository _queenRepository;
 
         public QueenController(IQueenRepository repository)
         {
-            _repository = repository;
+            _queenRepository = repository;
         }
 
         [HttpGet]
-        [Route("GetQueens/{beeFamilyId}")]
-        public async Task<ActionResult<IEnumerable<QueenDto>>> GetItems(long beeFamilyId)
+        [Route("GetQueens/{hievId}")]
+        public async Task<ActionResult<IEnumerable<QueenDto>>> GetItems(long hiveId)
         {
             try
             {
-                var queens = await _repository.GetItems(beeFamilyId);
-                if (!queens.Any())
+                var userId = GetUserId();
+                List<QueenDto> queenDtos = new List<QueenDto>();
+                if (!string.IsNullOrWhiteSpace(userId))
                 {
-                    return NotFound();
+                    var queens = await _queenRepository.GetItems(hiveId, userId);
+                    queenDtos = Queen2QueenDtoTranslator.Translate(queens);
                 }
 
-                var queenDtos = Queen2QueenDtoTranslator.Translate(queens);
                 return Ok(queenDtos);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while retrieving queens");
+            }
+        }
+
+        [HttpGet]
+        [Route("Get/{id}")]
+        public async Task<ActionResult<QueenDto>> Get(long id)
+        {
+            try
+            {
+                var userId = GetUserId();
+                Queen? queen = null;
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    queen = await _queenRepository.GetItem(id, userId);
+                    if (queen != null)
+                    {
+                        var item = Queen2QueenDtoTranslator.TranslateOne(queen);
+                        return Ok(item);
+                    }
+                }
+
+                return NotFound(StatusCodes.Status404NotFound);
             }
             catch
             {
@@ -43,11 +73,15 @@ namespace BeeNice.WebApi.Controllers
         {
             try
             {
-                var savedQueen = await _repository.SaveItem(queen);
-                if (savedQueen != null)
+                var userId = GetUserId();
+                if (!string.IsNullOrEmpty(userId))
                 {
-                    var item = Queen2QueenDtoTranslator.TranslateOne(savedQueen);
-                    return Ok(item);
+                    var savedQueen = await _queenRepository.SaveItem(queen, userId);
+                    if (savedQueen != null)
+                    {
+                        var item = Queen2QueenDtoTranslator.TranslateOne(savedQueen);
+                        return Ok(item);
+                    }
                 }
 
                 return NotFound();
@@ -58,21 +92,26 @@ namespace BeeNice.WebApi.Controllers
             }
         }
 
-        [HttpGet]
-        [Route("Get/{id}")]
-        public async Task<ActionResult<QueenDto>> Get(long id)
+        [HttpPut]
+        [Route("Update")]
+        public async Task<ActionResult<QueenDto>> Update(QueenDto queen)
         {
             try
             {
-                var queen = await _repository.GetItem(id);
-                if (queen.Value == null)
+                var userId = GetUserId();
+                if (!string.IsNullOrEmpty(userId))
                 {
-                    return NotFound(StatusCodes.Status404NotFound);
+                    var updatedItem = await _queenRepository.EditItem(queen, userId);
+                    if (updatedItem != null)
+                    {
+                        var item = Queen2QueenDtoTranslator.TranslateOne(updatedItem);
+                        return Ok(item);
+                    }
                 }
 
-                return Ok(queen);
+                return NotFound();
             }
-            catch
+            catch (Exception e)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving data from database");
             }
@@ -84,26 +123,11 @@ namespace BeeNice.WebApi.Controllers
         {
             try
             {
-                await _repository.Remove(id);
-                return Ok();
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving data from database");
-            }
-        }
-
-        [HttpPut]
-        [Route("Update")]
-        public async Task<ActionResult<QueenDto>> Update(QueenDto queen)
-        {
-            try
-            {
-                var updatedItem = await _repository.EditItem(queen);
-                if (updatedItem != null)
+                var userId = GetUserId();
+                if (!string.IsNullOrEmpty(userId))
                 {
-                    var item = Queen2QueenDtoTranslator.TranslateOne(updatedItem);
-                    return Ok(item);
+                    await _queenRepository.Remove(id, userId);
+                    return Ok();
                 }
 
                 return NotFound();

@@ -1,60 +1,59 @@
 ﻿using BeeNice.Models.Dtos;
 using BeeNice.WebApi.Entities;
+using BeeNice.WebApi.Repositories;
 using BeeNice.WebApi.Repositories.IRepositories;
 using BeeNice.WebApi.Translators;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BeeNice.WebApi.Controllers
 {
-    [Route("api/ApiaryController")]
+    [Route("api/HoneyCollectionController")]
     [ApiController]
-    [Authorize]
-    public class ApiaryController : BaseController
+    public class HoneyCollectionController: BaseController
     {
-        private readonly IApiaryRepository _apiaryRepository;
+        private readonly IHoneyCollectionRepository _honeyCollectionRepository;
 
-        public ApiaryController(IApiaryRepository apiaryRepository)
+        public HoneyCollectionController(IHoneyCollectionRepository honeyCollectionrepository)
         {
-            _apiaryRepository = apiaryRepository;
+            _honeyCollectionRepository = honeyCollectionrepository;
         }
 
         [HttpGet]
-        [Route("GetAll")]
-        public async Task<ActionResult<IEnumerable<ApiaryDto>>> GetItems()
+        [Route("GetHoneyCollections/{hiveId}")]
+        public async Task<ActionResult<IEnumerable<BeeFamilyDto>>> GetItems(long hiveId)
         {
             try
             {
                 var userId = GetUserId();
-                List<Apiary> apiaries = new List<Apiary>();
-                if (!string.IsNullOrEmpty(userId))
+                List<HoneyCollectionDto> honeyCollectionDtos = new List<HoneyCollectionDto>();
+                if (!string.IsNullOrWhiteSpace(userId))
                 {
-                    apiaries = await _apiaryRepository.GetItems(userId);
+                    var honeyCollections = await _honeyCollectionRepository.GetItems(hiveId, userId);
+                    honeyCollectionDtos = HoneyCollection2HoneyCollectionDtoTranslator.Translate(honeyCollections);
                 }
 
-                var apiaryDtos = Apiary2ApiaryDtoTranslator.Translate(apiaries);
-                return Ok(apiaryDtos);
+                return Ok(honeyCollectionDtos);
             }
-            catch
+            catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving data from database");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while retrieving honey collections");
             }
         }
 
         [HttpGet]
         [Route("Get/{id}")]
-        public async Task<ActionResult<ApiaryDto>> Get(long id)
+        public async Task<ActionResult<HoneyCollectionDto>> Get(long id)
         {
             try
             {
                 var userId = GetUserId();
-                Apiary? apiary = null;
+                HoneyCollection? honeyCollection = null;
                 if (!string.IsNullOrEmpty(userId))
                 {
-                    apiary = await _apiaryRepository.GetItem(id, userId);
-                    if (apiary != null)
+                    honeyCollection = await _honeyCollectionRepository.GetItem(id, userId);
+                    if (honeyCollection != null)
                     {
-                        var item = Apiary2ApiaryDtoTranslator.TranslateOne(apiary);
+                        var item = HoneyCollection2HoneyCollectionDtoTranslator.TranslateOne(honeyCollection);
                         return Ok(item);
                     }
                 }
@@ -69,21 +68,21 @@ namespace BeeNice.WebApi.Controllers
 
         [HttpPost]
         [Route("Save")]
-        public async Task<ActionResult<ApiaryDto>> Save(ApiaryDto apiary)
+        public async Task<ActionResult<HoneyCollectionDto>> Save(HoneyCollectionDto honeyCollection)
         {
             try
             {
                 var userId = GetUserId();
                 if (!string.IsNullOrEmpty(userId))
                 {
-                    var savedApiary = await _apiaryRepository.SaveItem(apiary, userId);
-                    if (savedApiary != null)
+                    var savedHoneyCollection = await _honeyCollectionRepository.SaveItem(honeyCollection, userId);
+                    if (savedHoneyCollection != null)
                     {
-                        var item = Apiary2ApiaryDtoTranslator.TranslateOne(savedApiary);
+                        var item = HoneyCollection2HoneyCollectionDtoTranslator.TranslateOne(savedHoneyCollection);
                         return Ok(item);
                     }
                 }
-                
+
                 return NotFound();
             }
             catch
@@ -94,17 +93,17 @@ namespace BeeNice.WebApi.Controllers
 
         [HttpPut]
         [Route("Update")]
-        public async Task<ActionResult<ApiaryDto>> Update(ApiaryDto apiary)
+        public async Task<ActionResult<HoneyCollectionDto>> Update(HoneyCollectionDto honeyCollection)
         {
             try
             {
                 var userId = GetUserId();
                 if (!string.IsNullOrEmpty(userId))
                 {
-                    var updatedItem = await _apiaryRepository.EditItem(apiary, userId);
+                    var updatedItem = await _honeyCollectionRepository.EditItem(honeyCollection, userId);
                     if (updatedItem != null)
                     {
-                        var item = Apiary2ApiaryDtoTranslator.TranslateOne(updatedItem);
+                        var item = HoneyCollection2HoneyCollectionDtoTranslator.TranslateOne(updatedItem);
                         return Ok(item);
                     }
                 }
@@ -126,7 +125,7 @@ namespace BeeNice.WebApi.Controllers
                 var userId = GetUserId();
                 if (!string.IsNullOrEmpty(userId))
                 {
-                    await _apiaryRepository.Remove(id, userId);
+                    await _honeyCollectionRepository.Remove(id, userId);
                     return Ok();
                 }
 

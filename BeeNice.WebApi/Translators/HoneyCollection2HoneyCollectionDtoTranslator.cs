@@ -5,7 +5,7 @@ namespace BeeNice.WebApi.Translators
 {
     public static class HoneyCollection2HoneyCollectionDtoTranslator
     {
-        public static IEnumerable<HoneyCollectionDto> Translate(IEnumerable<HoneyCollection> entities)
+        public static List<HoneyCollectionDto> Translate(IEnumerable<HoneyCollection> entities)
         {
             return entities.Select(i => new HoneyCollectionDto()
             {
@@ -14,7 +14,7 @@ namespace BeeNice.WebApi.Translators
                 CollectionDate = i.CollectionDate,
                 TypeOfHoney = i.TypeOfHoney,
                 HoneyQuantity = i.HoneyQuantity
-            });
+            }).ToList();
         }
 
         public static HoneyCollectionDto TranslateOne(HoneyCollection entity)

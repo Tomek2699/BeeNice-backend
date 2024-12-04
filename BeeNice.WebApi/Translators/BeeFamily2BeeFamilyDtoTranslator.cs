@@ -5,7 +5,7 @@ namespace BeeNice.WebApi.Translators
 {
     public static class BeeFamily2BeeFamilyDtoTranslator
     {
-        public static IEnumerable<BeeFamilyDto> Translate(IEnumerable<BeeFamily> entities)
+        public static List<BeeFamilyDto> Translate(IEnumerable<BeeFamily> entities)
         {
             return entities.Select(i => new BeeFamilyDto()
             {
@@ -15,7 +15,7 @@ namespace BeeNice.WebApi.Translators
                 FamilyState = i.FamilyState,
                 Race = i.Race,
                 CreationDate = i.CreationDate,
-            });
+            }).ToList();
         }
 
         public static BeeFamilyDto TranslateOne(BeeFamily entity)

@@ -24,6 +24,12 @@ namespace BeeNice.WebApi.Repositories
             return items;
         }
 
+        public async Task<Hive?> GetItem(long id, string userId)
+        {
+            var item = await _dbContext.Hive.FirstOrDefaultAsync(i => i.Id == id && i.Apiary.UserId == userId);
+            return item;
+        }
+
         public async Task<Hive?> SaveItem(HiveDto hive, string userId)
         {
             var apiary = _dbContext.Apiary.AsNoTracking()
@@ -45,25 +51,6 @@ namespace BeeNice.WebApi.Repositories
             }
 
             return null;
-        }
-
-        public async Task<Hive?> GetItem(long id, string userId)
-        {
-            var item = await _dbContext.Hive.FirstOrDefaultAsync(i => i.Id == id && i.Apiary.UserId == userId);
-            return item;
-        }
-
-        public async Task<ActionResult> Remove(long id, string userId)
-        {
-            var itemToRemove = await _dbContext.Hive.FirstOrDefaultAsync(i => i.Id == id && i.Apiary.UserId == userId);
-            if (itemToRemove != null)
-            {
-                _dbContext.Hive.Remove(itemToRemove);
-                await _dbContext.SaveChangesAsync();
-                return new OkResult();
-            }
-
-            return new NotFoundResult();
         }
 
         public async Task<Hive?> EditItem(HiveDto hive, string userId)
@@ -89,6 +76,19 @@ namespace BeeNice.WebApi.Repositories
 
             await _dbContext.SaveChangesAsync();
             return itemToUpdate;
+        }
+
+        public async Task<ActionResult> Remove(long id, string userId)
+        {
+            var itemToRemove = await _dbContext.Hive.FirstOrDefaultAsync(i => i.Id == id && i.Apiary.UserId == userId);
+            if (itemToRemove != null)
+            {
+                _dbContext.Hive.Remove(itemToRemove);
+                await _dbContext.SaveChangesAsync();
+                return new OkResult();
+            }
+
+            return new NotFoundResult();
         }
     }
 }

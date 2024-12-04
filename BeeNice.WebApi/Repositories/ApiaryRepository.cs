@@ -22,6 +22,12 @@ namespace BeeNice.WebApi.Repositories
             return items;
         }
 
+        public async Task<Apiary?> GetItem(long id, string userId)
+        {
+            var item = await _dbContext.Apiary.FirstOrDefaultAsync(i => i.Id == id && i.UserId == userId);
+            return item;
+        }
+
         public async Task<Apiary?> SaveItem(ApiaryDto apiary, string userId)
         {
             var itemToSave = new Apiary
@@ -36,25 +42,6 @@ namespace BeeNice.WebApi.Repositories
             await _dbContext.SaveChangesAsync();
             var returnedItem = GetItem(itemToSave.Id, userId).Result;
             return returnedItem;
-        }
-
-        public async Task<Apiary?> GetItem(long id, string userId)
-        {
-            var item = await _dbContext.Apiary.FirstOrDefaultAsync(i => i.Id == id && i.UserId == userId);
-            return item;
-        }
-
-        public async Task<ActionResult> Remove(long id, string userId)
-        {
-            var itemToRemove = await _dbContext.Apiary.FirstOrDefaultAsync(i => i.Id == id && i.UserId == userId);
-            if (itemToRemove != null)
-            {
-                _dbContext.Apiary.Remove(itemToRemove);
-                await _dbContext.SaveChangesAsync();
-                return new OkResult();
-            }
-
-            return new NotFoundResult();
         }
 
         public async Task<Apiary?> EditItem(ApiaryDto apiary, string userId)
@@ -75,6 +62,19 @@ namespace BeeNice.WebApi.Repositories
 
             await _dbContext.SaveChangesAsync();
             return itemToUpdate;
+        }
+
+        public async Task<ActionResult> Remove(long id, string userId)
+        {
+            var itemToRemove = await _dbContext.Apiary.FirstOrDefaultAsync(i => i.Id == id && i.UserId == userId);
+            if (itemToRemove != null)
+            {
+                _dbContext.Apiary.Remove(itemToRemove);
+                await _dbContext.SaveChangesAsync();
+                return new OkResult();
+            }
+
+            return new NotFoundResult();
         }
     }
 }

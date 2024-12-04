@@ -1,4 +1,6 @@
 ﻿using BeeNice.Models.Dtos;
+using BeeNice.WebApi.Entities;
+using BeeNice.WebApi.Repositories;
 using BeeNice.WebApi.Repositories.IRepositories;
 using BeeNice.WebApi.Translators;
 using Microsoft.AspNetCore.Mvc;
@@ -7,7 +9,7 @@ namespace BeeNice.WebApi.Controllers
 {
     [Route("api/BeeFamilyController")]
     [ApiController]
-    public class BeeFamilyController : ControllerBase
+    public class BeeFamilyController : BaseController
     {
         private readonly IBeeFamilyRepository _beeFamilyRepository;
 
@@ -22,14 +24,41 @@ namespace BeeNice.WebApi.Controllers
         {
             try
             {
-                var beFamiliese = await _beeFamilyRepository.GetItems(hiveId);
-                if (!beFamiliese.Any())
+                var userId = GetUserId();
+                List<BeeFamilyDto> beeFamilyDtos = new List<BeeFamilyDto>();
+                if (!string.IsNullOrWhiteSpace(userId))
                 {
-                    return NotFound();
+                    var beeFamilies = await _beeFamilyRepository.GetItems(hiveId, userId);
+                    beeFamilyDtos = BeeFamily2BeeFamilyDtoTranslator.Translate(beeFamilies);
                 }
 
-                var beeFamilyDtos = BeeFamily2BeeFamilyDtoTranslator.Translate(beFamiliese);
                 return Ok(beeFamilyDtos);
+            }
+            catch
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while retrieving bee families");
+            }
+        }
+
+        [HttpGet]
+        [Route("Get/{id}")]
+        public async Task<ActionResult<BeeFamilyDto>> Get(long id)
+        {
+            try
+            {
+                var userId = GetUserId();
+                BeeFamily? beeFamily = null;
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    beeFamily = await _beeFamilyRepository.GetItem(id, userId);
+                    if (beeFamily != null)
+                    {
+                        var item = BeeFamily2BeeFamilyDtoTranslator.TranslateOne(beeFamily);
+                        return Ok(item);
+                    }
+                }
+
+                return NotFound(StatusCodes.Status404NotFound);
             }
             catch
             {
@@ -43,11 +72,15 @@ namespace BeeNice.WebApi.Controllers
         {
             try
             {
-                var savedBeeFamily = await _beeFamilyRepository.SaveItem(beeFamily);
-                if (savedBeeFamily != null)
+                var userId = GetUserId();
+                if (!string.IsNullOrEmpty(userId))
                 {
-                    var item = BeeFamily2BeeFamilyDtoTranslator.TranslateOne(savedBeeFamily);
-                    return Ok(item);
+                    var savedBeeFamily = await _beeFamilyRepository.SaveItem(beeFamily, userId);
+                    if (savedBeeFamily != null)
+                    {
+                        var item = BeeFamily2BeeFamilyDtoTranslator.TranslateOne(savedBeeFamily);
+                        return Ok(item);
+                    }
                 }
 
                 return NotFound();
@@ -58,21 +91,26 @@ namespace BeeNice.WebApi.Controllers
             }
         }
 
-        [HttpGet]
-        [Route("Get/{id}")]
-        public async Task<ActionResult<BeeFamilyDto>> Get(long id)
+        [HttpPut]
+        [Route("Update")]
+        public async Task<ActionResult<BeeFamilyDto>> Update(BeeFamilyDto beeFamily)
         {
             try
             {
-                var beeFamily = await _beeFamilyRepository.GetItem(id);
-                if (beeFamily.Value == null)
+                var userId = GetUserId();
+                if (!string.IsNullOrEmpty(userId))
                 {
-                    return NotFound(StatusCodes.Status404NotFound);
+                    var updatedItem = await _beeFamilyRepository.EditItem(beeFamily, userId);
+                    if (updatedItem != null)
+                    {
+                        var item = BeeFamily2BeeFamilyDtoTranslator.TranslateOne(updatedItem);
+                        return Ok(item);
+                    }
                 }
 
-                return Ok(beeFamily);
+                return NotFound();
             }
-            catch
+            catch (Exception e)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving data from database");
             }
@@ -84,26 +122,11 @@ namespace BeeNice.WebApi.Controllers
         {
             try
             {
-                await _beeFamilyRepository.Remove(id);
-                return Ok();
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving data from database");
-            }
-        }
-
-        [HttpPut]
-        [Route("Update")]
-        public async Task<ActionResult<BeeFamilyDto>> Update(BeeFamilyDto beeFamily)
-        {
-            try
-            {
-                var updatedItem = await _beeFamilyRepository.EditItem(beeFamily);
-                if (updatedItem != null)
+                var userId = GetUserId();
+                if (!string.IsNullOrEmpty(userId))
                 {
-                    var item = BeeFamily2BeeFamilyDtoTranslator.TranslateOne(updatedItem);
-                    return Ok(item);
+                    await _beeFamilyRepository.Remove(id, userId);
+                    return Ok();
                 }
 
                 return NotFound();

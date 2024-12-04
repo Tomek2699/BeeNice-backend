@@ -16,21 +16,47 @@ namespace BeeNice.WebApi.Repositories
             _dbContext = dbContext;
         }
 
-        public async Task<ActionResult<Queen?>> GetItem(long id)
+        public async Task<List<Queen>> GetItems(long hiveId, string userId)
         {
-            var item = await _dbContext.Queen.FindAsync(id);
-            return item;
-        }
-
-        public async Task<List<Queen>> GetItems(long hiveId)
-        {
-            var items = await _dbContext.Queen.AsNoTracking().Where(i => i.HiveId == hiveId).ToListAsync();
+            var items = await _dbContext.Queen.AsNoTracking()
+                .Where(i => i.Hive.Apiary.UserId == userId && i.HiveId == hiveId)
+                .ToListAsync();
             return items;
         }
 
-        public async Task<Queen?> EditItem(QueenDto queen)
+        public async Task<Queen?> GetItem(long id, string userId)
         {
-            var itemToUpdate = await _dbContext.Queen.FindAsync(queen.Id);
+            var item = await _dbContext.Queen.FirstOrDefaultAsync(i => i.Id == id && i.Hive.Apiary.UserId == userId);
+            return item;
+        }
+
+        public async Task<Queen?> SaveItem(QueenDto queen, string userId)
+        {
+            var hive = _dbContext.Hive.AsNoTracking()
+                .FirstOrDefaultAsync(i => i.Id == queen.HiveId && i.Apiary.UserId == userId);
+            if (hive != null)
+            {
+                var itemToSave = new Queen()
+                {
+                    QueenNumber = queen.QueenNumber,
+                    State = queen.State,
+                    HiveId = queen.HiveId,
+                    Race = queen.Race,
+                    HatchDate = queen.HatchDate,
+                };
+
+                _dbContext.Queen.Add(itemToSave);
+                long returnedId = await _dbContext.SaveChangesAsync();
+                var returnedItem = GetItem(returnedId, userId).Result;
+                return returnedItem;
+            }
+
+            return null;
+        }
+
+        public async Task<Queen?> EditItem(QueenDto queen, string userId)
+        {
+            var itemToUpdate = await _dbContext.Queen.FirstOrDefaultAsync(i => i.Id == queen.Id && i.Hive.Apiary.UserId == userId);
             if (itemToUpdate != null)
             {
                 if (itemToUpdate.QueenNumber != queen.QueenNumber)
@@ -58,9 +84,9 @@ namespace BeeNice.WebApi.Repositories
             return itemToUpdate;
         }
 
-        public async Task<ActionResult> Remove(long id)
+        public async Task<ActionResult> Remove(long id, string userId)
         {
-            var itemToRemove = await _dbContext.Queen.FindAsync(id);
+            var itemToRemove = await _dbContext.Queen.FirstOrDefaultAsync(i => i.Id == id && i.Hive.Apiary.UserId == userId);
             if (itemToRemove != null)
             {
                 _dbContext.Queen.Remove(itemToRemove);
@@ -69,23 +95,6 @@ namespace BeeNice.WebApi.Repositories
             }
 
             return new NotFoundResult();
-        }
-
-        public async Task<Queen?> SaveItem(QueenDto queen)
-        {
-            var itemToSave = new Queen()
-            {
-                QueenNumber = queen.QueenNumber,
-                State = queen.State,
-                HiveId = queen.HiveId,
-                Race = queen.Race,
-                HatchDate = queen.HatchDate,
-            };
-
-            _dbContext.Queen.Add(itemToSave);
-            long returnedId = await _dbContext.SaveChangesAsync();
-            var returnedItem = GetItem(returnedId).Result?.Value;
-            return returnedItem;
         }
     }
 }

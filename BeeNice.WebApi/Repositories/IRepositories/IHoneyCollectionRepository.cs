@@ -6,9 +6,9 @@ namespace BeeNice.WebApi.Repositories.IRepositories;
 
 public interface IHoneyCollectionRepository
 {
-    Task<List<HoneyCollection>> GetItems(long hiveId);
-    Task<HoneyCollection?> SaveItem(HoneyCollectionDto honeyCollection);
-    Task<ActionResult<HoneyCollection?>> GetItem(long id);
-    Task<ActionResult> Remove(long id);
-    Task<HoneyCollection?> EditItem(HoneyCollectionDto honeyCollection);
+    Task<List<HoneyCollection>> GetItems(long hiveId, string userId);
+    Task<HoneyCollection?> GetItem(long id, string userId);
+    Task<HoneyCollection?> SaveItem(HoneyCollectionDto honeyCollection, string userId);
+    Task<HoneyCollection?> EditItem(HoneyCollectionDto honeyCollection, string userId);
+    Task<ActionResult> Remove(long id, string userId);
 }

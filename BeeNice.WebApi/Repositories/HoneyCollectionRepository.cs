@@ -16,21 +16,47 @@ namespace BeeNice.WebApi.Repositories
             _dbContext = dbContext;
         }
 
-        public async Task<ActionResult<HoneyCollection?>> GetItem(long id)
+        public async Task<List<HoneyCollection>> GetItems(long hiveId, string userId)
         {
-            var item = await _dbContext.HoneyCollection.FindAsync(id);
-            return item;
-        }
-
-        public async Task<List<HoneyCollection>> GetItems(long hiveId)
-        {
-            var items = await _dbContext.HoneyCollection.AsNoTracking().Where(i => i.HiveId == hiveId).ToListAsync();
+            var items = await _dbContext.HoneyCollection.AsNoTracking()
+                .Where(i => i.Hive.Apiary.UserId == userId && i.HiveId == hiveId)
+                .ToListAsync();
             return items;
         }
 
-        public async Task<HoneyCollection?> EditItem(HoneyCollectionDto honeyCollection)
+        public async Task<HoneyCollection?> GetItem(long id, string userId)
         {
-            var itemToUpdate = await _dbContext.HoneyCollection.FindAsync(honeyCollection.Id);
+            var item = await _dbContext.HoneyCollection.FirstOrDefaultAsync(i => i.Id == id && i.Hive.Apiary.UserId == userId);
+            return item;
+        }
+
+        public async Task<HoneyCollection?> SaveItem(HoneyCollectionDto honeyCollection, string userId)
+        {
+            var hive = _dbContext.Hive.AsNoTracking()
+                .FirstOrDefaultAsync(i => i.Id == honeyCollection.HiveId && i.Apiary.UserId == userId);
+            if (hive != null)
+            {
+                var itemToSave = new HoneyCollection()
+                {
+                    HiveId = honeyCollection.HiveId,
+                    HoneyQuantity = honeyCollection.HoneyQuantity,
+                    CollectionDate = honeyCollection.CollectionDate,
+                    TypeOfHoney = honeyCollection.TypeOfHoney,
+                };
+
+                _dbContext.HoneyCollection.Add(itemToSave);
+                long returnedId = await _dbContext.SaveChangesAsync();
+                var returnedItem = GetItem(returnedId, userId).Result;
+                return returnedItem;
+            }
+
+            return null;
+        }
+
+        public async Task<HoneyCollection?> EditItem(HoneyCollectionDto honeyCollection, string userId)
+        {
+            var itemToUpdate = await _dbContext.HoneyCollection
+                .FirstOrDefaultAsync(i => i.Id == honeyCollection.Id && i.Hive.Apiary.UserId == userId);
             if (itemToUpdate != null)
             {
                 if (itemToUpdate.HoneyQuantity != honeyCollection.HoneyQuantity)
@@ -53,9 +79,10 @@ namespace BeeNice.WebApi.Repositories
             return itemToUpdate;
         }
 
-        public async Task<ActionResult> Remove(long id)
+        public async Task<ActionResult> Remove(long id, string userId)
         {
-            var itemToRemove = await _dbContext.HoneyCollection.FindAsync(id);
+            var itemToRemove = await _dbContext.HoneyCollection
+                .FirstOrDefaultAsync(i => i.Id == id && i.Hive.Apiary.UserId == userId);
             if (itemToRemove != null)
             {
                 _dbContext.HoneyCollection.Remove(itemToRemove);
@@ -64,22 +91,6 @@ namespace BeeNice.WebApi.Repositories
             }
 
             return new NotFoundResult();
-        }
-
-        public async Task<HoneyCollection?> SaveItem(HoneyCollectionDto honeyCollection)
-        {
-            var itemToSave = new HoneyCollection()
-            {
-                HiveId = honeyCollection.HiveId,
-                HoneyQuantity = honeyCollection.HoneyQuantity,
-                CollectionDate = honeyCollection.CollectionDate,
-                TypeOfHoney = honeyCollection.TypeOfHoney,
-            };
-
-            _dbContext.HoneyCollection.Add(itemToSave);
-            long returnedId = await _dbContext.SaveChangesAsync();
-            var returnedItem = GetItem(returnedId).Result?.Value;
-            return returnedItem;
         }
     }
 }
