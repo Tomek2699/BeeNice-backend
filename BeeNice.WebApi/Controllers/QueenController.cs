@@ -20,7 +20,7 @@ namespace BeeNice.WebApi.Controllers
         }
 
         [HttpGet]
-        [Route("GetQueens/{hievId}")]
+        [Route("GetQueens/{hiveId}")]
         public async Task<ActionResult<IEnumerable<QueenDto>>> GetItems(long hiveId)
         {
             try
