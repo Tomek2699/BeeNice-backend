@@ -41,6 +41,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 // Services
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IApiaryRepository, ApiaryRepository>();
 builder.Services.AddScoped<IHiveRepository, HiveRepository>();
 builder.Services.AddScoped<IBeeFamilyRepository, BeeFamilyRepository>();

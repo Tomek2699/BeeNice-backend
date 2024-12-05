@@ -1,6 +1,5 @@
 ﻿using BeeNice.Models.Dtos;
 using BeeNice.WebApi.Entities;
-using BeeNice.WebApi.Repositories;
 using BeeNice.WebApi.Repositories.IRepositories;
 using BeeNice.WebApi.Translators;
 using Microsoft.AspNetCore.Mvc;

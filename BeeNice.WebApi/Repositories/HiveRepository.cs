@@ -32,7 +32,7 @@ namespace BeeNice.WebApi.Repositories
 
         public async Task<Hive?> SaveItem(HiveDto hive, string userId)
         {
-            var apiary = _dbContext.Apiary.AsNoTracking()
+            var apiary = await _dbContext.Apiary.AsNoTracking()
                 .FirstOrDefaultAsync(i => i.Id == hive.ApiaryId && i.UserId == userId);
             if (apiary != null)
             {
@@ -45,8 +45,8 @@ namespace BeeNice.WebApi.Repositories
                 };
 
                 _dbContext.Hive.Add(itemToSave);
-                long returnedId = await _dbContext.SaveChangesAsync();
-                var returnedItem = GetItem(returnedId, userId).Result;
+                await _dbContext.SaveChangesAsync();
+                var returnedItem = GetItem(itemToSave.Id, userId).Result;
                 return returnedItem;
             }
 

@@ -5,6 +5,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using BeeNice.Models.Dtos;
+using BeeNice.WebApi.Repositories.IRepositories;
 
 namespace BeeNice.WebApi.Controllers
 {
@@ -15,14 +16,15 @@ namespace BeeNice.WebApi.Controllers
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly IConfiguration _configuration;
+        private readonly IUserRepository _userRepository;
 
         public AuthorizationController(UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager,
-            IConfiguration configuration)
+            SignInManager<IdentityUser> signInManager, IConfiguration configuration, IUserRepository userRepository)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _configuration = configuration;
+            _userRepository = userRepository;
         }
 
         [HttpPost("Register")]
@@ -140,7 +142,24 @@ namespace BeeNice.WebApi.Controllers
                     tokenHandler.ValidateToken(token, validationParameters, out var validatedToken);
                     if (validatedToken is JwtSecurityToken jwtToken)
                     {
-                        return Ok("Token is valid!");
+                        var userIdClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+                        if (userIdClaim != null)
+                        {
+                            var userId = userIdClaim.Value;
+                            var exist = _userRepository.IsUserExist(userId).Result;
+                            if (exist)
+                            {
+                                return Ok("Token is valid, and user exists.");
+                            }
+                            else
+                            {
+                                return Unauthorized("User not found.");
+                            }
+                        }
+                        else
+                        {
+                            return Unauthorized("User ID not found in token.");
+                        }
                     }
                 }
 
