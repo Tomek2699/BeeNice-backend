@@ -46,7 +46,7 @@ namespace BeeNice.WebApi.Repositories
                 };
 
                 _dbContext.BeeFamily.Add(itemToSave);
-                _dbContext.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync();
                 var returnedItem = GetItem(itemToSave.Id, userId).Result;
                 return returnedItem;
             }
