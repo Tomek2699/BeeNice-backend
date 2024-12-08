@@ -10,11 +10,11 @@ namespace BeeNice.WebApi.Translators
             return entities.Select(i => new QueenDto()
             {
                 Id = i.Id,
-                HiveId = i.HiveId,
                 State = i.State,
                 Race = i.Race,
                 HatchDate = i.HatchDate,
                 QueenNumber = i.QueenNumber,
+                HiveId = i.HiveId,
             }).ToList();
         }
 
@@ -23,11 +23,11 @@ namespace BeeNice.WebApi.Translators
             return new QueenDto
             {
                 Id = entity.Id,
-                HiveId = entity.HiveId,
                 State = entity.State,
                 Race = entity.Race,
                 HatchDate = entity.HatchDate,
                 QueenNumber = entity.QueenNumber,
+                HiveId = entity.HiveId,
             };
         }
     }

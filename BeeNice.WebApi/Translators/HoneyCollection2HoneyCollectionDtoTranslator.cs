@@ -10,10 +10,10 @@ namespace BeeNice.WebApi.Translators
             return entities.Select(i => new HoneyCollectionDto()
             {
                 Id = i.Id,
-                HiveId = i.HiveId,
                 CollectionDate = i.CollectionDate,
                 TypeOfHoney = i.TypeOfHoney,
-                HoneyQuantity = i.HoneyQuantity
+                HoneyQuantity = i.HoneyQuantity,
+                HiveId = i.HiveId,
             }).ToList();
         }
 
@@ -22,10 +22,10 @@ namespace BeeNice.WebApi.Translators
             return new HoneyCollectionDto
             {
                 Id = entity.Id,
-                HiveId = entity.HiveId,
                 CollectionDate = entity.CollectionDate,
                 TypeOfHoney = entity.TypeOfHoney,
-                HoneyQuantity = entity.HoneyQuantity
+                HoneyQuantity = entity.HoneyQuantity,
+                HiveId = entity.HiveId,
             };
         }
     }

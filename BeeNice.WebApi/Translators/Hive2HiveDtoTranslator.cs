@@ -10,10 +10,10 @@ namespace BeeNice.WebApi.Translators
             return entities.Select(i => new HiveDto()
             {
                 Id = i.Id,
-                ApiaryId = i.ApiaryId,
                 HiveNumber = i.HiveNumber,
                 State = i.State,
                 Type = i.Type,
+                ApiaryId = i.ApiaryId,
             }).ToList();
         }
 
@@ -22,10 +22,10 @@ namespace BeeNice.WebApi.Translators
             return new HiveDto
             {
                 Id = entity.Id,
-                ApiaryId = entity.ApiaryId,
                 HiveNumber = entity.HiveNumber,
                 State = entity.State,
                 Type = entity.Type,
+                ApiaryId = entity.ApiaryId,
             };
         }
     }

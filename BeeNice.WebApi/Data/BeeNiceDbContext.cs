@@ -16,5 +16,7 @@ namespace BeeNice.WebApi.Data
         public DbSet<BeeFamily> BeeFamily { get; set; }
         public DbSet<Queen> Queen { get; set; }
         public DbSet<HoneyCollection> HoneyCollection { get; set; }
+        public DbSet<Review> Review { get; set; }
+        public DbSet<TherapeuticTreatment> TherapeuticTreatment { get; set; }
     }
 }
