@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BeeNice.WebApi.Controllers
 {
-    [Route("api/ReviewController")]
+    [Route("api/TherapeuticTreatmentController")]
     [ApiController]
     [Authorize]
     public class TherapeuticTreatmentController : BaseController

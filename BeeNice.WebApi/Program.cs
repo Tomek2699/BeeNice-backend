@@ -47,6 +47,8 @@ builder.Services.AddScoped<IHiveRepository, HiveRepository>();
 builder.Services.AddScoped<IBeeFamilyRepository, BeeFamilyRepository>();
 builder.Services.AddScoped<IQueenRepository, QueenRepository>();
 builder.Services.AddScoped<IHoneyCollectionRepository, HoneyCollectionRepository>();
+builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+builder.Services.AddScoped<ITherapeuticTreatmentRepository, TherapeuticTreatmentRepository>();
 
 var app = builder.Build();
 
